@@ -1,0 +1,114 @@
+#include <stdlib.h>
+#include <stdint.h>
+#include "utils.h"
+#include "list.h"
+
+typedef struct ListElement
+{
+    void *data;
+    struct ListElement *next;
+    struct ListElement *prev;
+} ListElement;
+
+struct List
+{
+    ListElement *head;
+    ListElement *tail;
+    size_t size;
+    ListElement *current;
+};
+
+List *listInit(size_t size)
+{
+    List *list = safe_malloc(sizeof(List));
+    list->head = NULL;
+    list->tail = NULL;
+    list->size = 0;
+    list->current = NULL;
+    while (size-- > 0)
+    {
+        listPush(list, NULL);
+    }
+    return list;
+}
+
+size_t listPushLeft(List *list, void *data)
+{
+    if (list->size == SIZE_MAX)
+    {
+        return 0;
+    }
+    ListElement *elem = safe_malloc(sizeof(ListElement));
+    elem->data = data;
+    elem->next = list->head;
+    elem->prev = NULL;
+    list->head = elem;
+    if (!list->tail)
+    {
+        list->tail = elem;
+    }
+    return ++list->size;
+}
+
+size_t listPushRight(List *list, void *data)
+{
+    if (list->size == SIZE_MAX)
+    {
+        return 0;
+    }
+    ListElement *elem = safe_malloc(sizeof(ListElement));
+    elem->data = data;
+    elem->prev = list->tail;
+    elem->next = NULL;
+    list->tail = elem;
+    if (!list->head)
+    {
+        list->head = elem;
+    }
+    return ++list->size;
+}
+
+void *listPopLeft(List *list)
+{
+    if (list->size == 0)
+    {
+        return NULL;
+    }
+    ListElement *elem = list->head;
+    list->head = elem->next;
+    if (!list->head)
+    {
+        list->tail = NULL;
+    }
+    list->size--;
+    void *data = elem->data;
+    free(elem);
+    return data;
+}
+
+void *listPopRight(List *list)
+{
+    if (list->size == 0)
+    {
+        return NULL;
+    }
+    ListElement *elem = list->tail;
+    list->tail = elem->prev;
+    if (!list->tail)
+    {
+        list->head = NULL;
+    }
+    list->size--;
+    void *data = elem->data;
+    free(elem);
+    return data;
+}
+
+void listDelete(List *list)
+{
+    while (list->size)
+    {
+        listRemove(list);
+    }
+    free(list);
+}
