@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "utils.h"
 #include "server.h"
@@ -18,47 +19,49 @@
     if (fclose(f) == -1) \
     perror("fclose (" #f ")")
 
+#define FPUTS(s, f)        \
+    if (fputs(s, f) == -1) \
+    perror("fputs (" #f ")")
+
 static int checkInitRequest(FILE *rx, FILE *tx)
 {
-    char *line = readLine(rx, MAX_REQUEST_LEN);
-    if (!line)
+    char line[MAX_REQUEST_LEN + 1];
+    if (readLine(rx, line, MAX_REQUEST_LEN) == -1)
     {
-        fprintf(stderr, "Request too long!\n");
-        fputs("FAIL LENGTH\n", tx);
+        if (errno)
+        {
+            perror("Readline failed");
+            FPUTS("FAIL SERVER", tx);
+        }
+        else
+        {
+            FPUTS("[FAIL] Request too long!\n", stderr);
+            FPUTS("FAIL LENGTH", tx);
+        }
         return -1;
     }
-    if (strncmp(line, "HELLO ", 6))
+    char *command = strtok(line, " \n");
+    if (!command || strcmp(command, "HELLO") != 0)
     {
-        fprintf(stderr, "Invalid request!\n");
-        free(line);
-        fputs("FAIL HELLO\n", tx);
+        FPUTS("FAIL COMMAND", tx);
+        FPUTS("[FAIL] No or invalid command found!\n", stderr);
         return -1;
     }
-    char *curr = line + 6;
-    while (*curr == ' ')
+    char *name = strtok(NULL, " \n");
+    if (!name || strlen(name) > 10)
     {
-        curr++;
-    };
-    char name[11];
-    int i = 0;
-    while (i < 10 && isalpha(*(curr)))
-    {
-        name[i++] = *(curr++);
-    };
-    name[i] = 0;
-    while (*(curr) == ' ')
-    {
-        curr++;
-    };
-    if (*curr != '\n')
-    {
-        fprintf(stderr, "Invalid request!\n");
-        free(line);
-        fputs("FAIL NAME", tx);
+        FPUTS("FAIL NAME", tx);
+        FPUTS("[FAIL] No or too long name found!\n", stderr);
         return -1;
     }
-    free(line);
-    fprintf(tx, "OK %s\n", name);
+    if (fprintf(tx, "OK %s\n", name) < 0)
+    {
+        FPUTS("fprintf failed!\n", stderr);
+    }
+    if (fprintf(stdout, "[OK] New client: %s\n", name) < 0)
+    {
+        FPUTS("fprintf failed!\n", stderr);
+    }
     return 0;
 }
 

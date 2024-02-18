@@ -3,13 +3,12 @@
 
 #include "utils.h"
 
-char *readLine(FILE *file, const size_t max_len)
+int readLine(FILE *file, char *buffer, const size_t max_len)
 {
-    if (feof(file))
+    if (feof(file) || !buffer)
     {
-        return NULL;
+        return -1;
     }
-    char buffer[max_len];
     buffer[max_len] = 0;
     size_t i = 0;
     int c;
@@ -27,16 +26,14 @@ char *readLine(FILE *file, const size_t max_len)
     }
     if (ferror(file))
     {
-        return NULL;
+        return -1;
     }
     if (i > max_len)
     {
-        return NULL;
+        return -1;
     }
     buffer[i] = 0;
-    char *line = (char *)safe_malloc(i);
-    strcpy(line, buffer);
-    return line;
+    return 0;
 }
 
 void *safe_malloc(size_t size)

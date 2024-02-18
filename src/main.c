@@ -1,8 +1,11 @@
 #include <stdio.h>
 
 #include "server.h"
+#include "config.h"
 
 int main()
 {
-    startServer(6969);
+    COCConfig *config = configInit();
+    printf("Port: %d\n", config->port);
+    startServer(config->port);
 }

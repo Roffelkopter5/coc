@@ -16,6 +16,6 @@ size_t listPushRight(List *list, void *data);
 void *listPopLeft(List *list);
 void *listPopRight(List *list);
 
-void listDelete(List *list);
+void listDestroy(List *list);
 
 void walkList(List *list, void(func)(void *data));

@@ -4,6 +4,6 @@
 
 void *safe_malloc(size_t size);
 
-char *readLine(FILE *file, const size_t max_len);
+int readLine(FILE *file, char *buffer, const size_t max_len);
 
 noreturn void die(const char *msg);

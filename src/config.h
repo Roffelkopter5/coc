@@ -1,7 +1,7 @@
 typedef struct
 {
     char *name;
-    char *port;
+    uint16_t port;
 } COCConfig;
 
 COCConfig *configInit(void);

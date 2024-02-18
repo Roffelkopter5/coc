@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include "config.h"
 #include "utils.h"
@@ -24,8 +25,8 @@ static void parseLine(char *line, COCConfig *config)
 
 static void loadConfigFromFile(FILE *file, COCConfig *config)
 {
-    char *line;
-    while ((line = readLine(file, MAX_LINE_LENGTH)))
+    char line[MAX_LINE_LENGTH + 1];
+    while (readLine(file, line, MAX_LINE_LENGTH) != -1)
     {
         parseLine(line, config);
     }
@@ -39,17 +40,24 @@ static void loadDefaults(COCConfig *config)
     }
     if (!config->port)
     {
-        config->port = "6969";
+        config->port = 6969;
     }
 }
 
 COCConfig *configInit(void)
 {
     COCConfig *config = (COCConfig *)safe_malloc(sizeof(COCConfig));
+    config->name = NULL;
+    config->port = 0;
     FILE *file = fopen(".coc-config", "r");
     if (file)
     {
         loadConfigFromFile(file, config);
+        loadDefaults(config);
+    }
+    else if (errno != ENOENT)
+    {
+        perror("Cannot open config file");
     }
     loadDefaults(config);
     return config;

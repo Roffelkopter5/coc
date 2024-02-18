@@ -20,14 +20,20 @@ struct List
 
 List *listInit(size_t size)
 {
-    List *list = safe_malloc(sizeof(List));
+    List *list = malloc(sizeof(List));
+    if (!list)
+        return NULL;
     list->head = NULL;
     list->tail = NULL;
     list->size = 0;
     list->current = NULL;
     while (size-- > 0)
     {
-        listPush(list, NULL);
+        if (listPush(list, NULL) == 0)
+        {
+            listDestroy(list);
+            return NULL;
+        }
     }
     return list;
 }
@@ -38,7 +44,9 @@ size_t listPushLeft(List *list, void *data)
     {
         return 0;
     }
-    ListElement *elem = safe_malloc(sizeof(ListElement));
+    ListElement *elem = malloc(sizeof(ListElement));
+    if (!elem)
+        return 0;
     elem->data = data;
     elem->next = list->head;
     elem->prev = NULL;
@@ -56,7 +64,9 @@ size_t listPushRight(List *list, void *data)
     {
         return 0;
     }
-    ListElement *elem = safe_malloc(sizeof(ListElement));
+    ListElement *elem = malloc(sizeof(ListElement));
+    if (!elem)
+        return 0;
     elem->data = data;
     elem->prev = list->tail;
     elem->next = NULL;
@@ -104,8 +114,10 @@ void *listPopRight(List *list)
     return data;
 }
 
-void listDelete(List *list)
+void listDestroy(List *list)
 {
+    if (!list)
+        return;
     while (list->size)
     {
         listRemove(list);
