@@ -1,1 +1,1 @@
-COC - *C*hat *O*ver *C*onsole
+COC - **C**hat **O**ver **C**onsole
