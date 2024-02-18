@@ -23,7 +23,7 @@
     if (fputs(s, f) == -1) \
     perror("fputs (" #f ")")
 
-static int checkInitRequest(FILE *rx, FILE *tx)
+static int checkInitRequest(COCConfig *config, FILE *rx, FILE *tx)
 {
     char line[MAX_REQUEST_LEN + 1];
     if (readLine(rx, line, MAX_REQUEST_LEN) == -1)
@@ -54,7 +54,7 @@ static int checkInitRequest(FILE *rx, FILE *tx)
         FPUTS("[FAIL] No or too long name found!\n", stderr);
         return -1;
     }
-    if (fprintf(tx, "OK %s\n", name) < 0)
+    if (fprintf(tx, "OK %s\n", config->name) < 0)
     {
         FPUTS("fprintf failed!\n", stderr);
     }
@@ -65,15 +65,15 @@ static int checkInitRequest(FILE *rx, FILE *tx)
     return 0;
 }
 
-static void handleCommunication(FILE *rx, FILE *tx)
+static void handleCommunication(COCConfig *config, FILE *rx, FILE *tx)
 {
 
-    if (checkInitRequest(rx, tx) == -1)
+    if (checkInitRequest(config, rx, tx) == -1)
         return;
     fflush(tx);
 }
 
-static void handleConnection(int conn)
+static void handleConnection(COCConfig *config, int conn)
 {
     FILE *rx = fdopen(conn, "r");
     if (!rx)
@@ -96,7 +96,7 @@ static void handleConnection(int conn)
         return;
     }
 
-    handleCommunication(rx, tx);
+    handleCommunication(config, rx, tx);
 
     fflush(tx);
 
@@ -104,9 +104,9 @@ static void handleConnection(int conn)
     FCLOSE(tx);
 }
 
-void startServer(uint16_t port)
+void startServer(COCConfig *config)
 {
-    port = htons(port);
+    uint16_t port = htons(config->port);
     int sock = socket(AF_INET6, SOCK_STREAM, 0);
     if (!sock)
     {
@@ -139,6 +139,6 @@ void startServer(uint16_t port)
         {
             continue;
         }
-        handleConnection(conn);
+        handleConnection(config, conn);
     }
 }

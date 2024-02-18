@@ -15,7 +15,7 @@ static void parseLine(char *line, COCConfig *config)
 {
     if (strncmp(line, "name=", 5) == 0)
     {
-        config->name = line + 5;
+        config->name = strdup(line + 5);
     }
     else
     {
@@ -46,7 +46,11 @@ static void loadDefaults(COCConfig *config)
 
 COCConfig *configInit(void)
 {
-    COCConfig *config = (COCConfig *)safe_malloc(sizeof(COCConfig));
+    COCConfig *config = (COCConfig *)malloc(sizeof(COCConfig));
+    if (!config)
+    {
+        return NULL;
+    }
     config->name = NULL;
     config->port = 0;
     FILE *file = fopen(".coc-config", "r");

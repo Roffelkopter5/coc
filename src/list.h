@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdlib.h>
 
 #define listPush(list, data) listPushRight(list, data)

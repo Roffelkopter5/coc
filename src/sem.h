@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct SEM SEM;
 
 SEM *semCreate(int initVal);
